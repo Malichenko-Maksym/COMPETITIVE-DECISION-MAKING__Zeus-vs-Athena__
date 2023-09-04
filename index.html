@@ -1,0 +1,227 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="Content-Type"content="text/html; charset=utf-8"/>
+		<meta name="viewport"content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+		<title>Zeus vs Athena</title>
+		<link href="css/style.css"rel="stylesheet"type="text/css"/>
+	</head>
+
+
+	<body>
+
+		<div id="foto">
+			
+			<img src="tree.png">
+			<p id="greeting">Payoffs</p>
+			<input type="range" min="0" max="100" value="50" class="slider" id="myRange" onchange="countExpectedValue(); countOptimalStrategies() ">
+			<p><span id="left"></span> %      chance       <span id="right"></span> %</p>
+
+			<hr style="width:100%;text-align:left;margin-left:0">
+
+			<h1>The payoffs (expected values):</h1>
+
+			
+			  <table id="expVal">
+				<col>
+				<colgroup span="2"></colgroup>
+				<colgroup span="2"></colgroup>
+				<tr>
+				  <td rowspan="2"></td>
+				  <th colspan="4" scope="colgroup">Athena</th>
+				  
+				</tr>
+				<tr>
+					<th scope="col"></th>
+				  <th scope="col">Lo</th>
+				  
+				  <th scope="col">Hi</th>
+				  
+				</tr>
+				<tr>
+					<th scope="row">Zeus</th>
+				  <th scope="row">Lo</th>
+				  <td id="ev1">0</td>
+				  <td id="ev2">0</td>
+				  
+				</tr>
+				<tr>
+				<th scope="row"></th>
+				  <th scope="row">Hi</th>
+				  <td id="ev3">0</td>
+				  <td id="ev4">0</td>
+				  
+				</tr>
+			  </table>
+
+			  <hr style="width:100%;text-align:left;margin-left:0">
+			  <h1>Optimal strategies:</h1>
+
+			  <p id="forZeus"></p>
+			  <p id="forAthena"></p>
+
+			  <h3 id="ann1"  >*Value of some strategie is negative, so dominance has appeared</h3>
+			  <h3 id="ann2" >Strategy should be concidered by dominance:</h3>
+			  <h3 id="answ" >Answer</h3>
+
+			  <hr style="width:100%;text-align:left;margin-left:0">
+
+			  <h1>The value of the game:</h1>
+			  <h3 id="valOfGame" >Answer</h3>
+			  
+		</div>
+		
+		
+		
+		<script>
+			
+			
+			var slider = document.getElementById("myRange");
+			var rightOutput = document.getElementById("right");
+			var leftOutput = document.getElementById("left");
+			rightOutput.innerHTML = slider.value;
+			leftOutput.innerHTML =slider.value;
+			
+			slider.oninput = function() {
+			  rightOutput.innerHTML = this.value;
+			  leftOutput.innerHTML = 100 - this.value;
+			  //alert(slider.value);
+			}
+
+			let payOffs = [
+				[16,8],
+				[8,16],
+				[20,4],
+				[16,8],
+				[30,10],
+				[28,12],
+				[16,24],
+				[24,16],
+			];
+
+			payoffsLook =  "";
+			let counter = 0;
+			payOffs.forEach(element => {
+				payoffsLook+="\u00A0"+"("+element[0]+","+element[1]+")"+"\u00A0";
+				counter+=1;
+				if(counter%2==0 && counter!=8){
+					payoffsLook+="\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0"
+				}
+			});
+			
+			
+			document.getElementById("greeting").innerHTML = payoffsLook;
+			
+			const ids = ["ev1", "ev2", "ev3", "ev4"];
+			ExpectedValue = [[0,0],[0,0],[0,0],[0,0]];
+
+			function countExpectedValue(){
+
+				for(let i = 0; i < ids.length; i++){
+					ExpectedValue[i][0] = (payOffs[i][0]*(100-slider.value)/100 )+ (payOffs[i+4][0]*slider.value/100 );
+					ExpectedValue[i][1] = (payOffs[i][1]*(100-slider.value)/100 )+ (payOffs[i+4][1]*slider.value/100 );
+					document.getElementById(ids[i]).innerHTML = "(" + ExpectedValue[i][0].toFixed(2)+" , " + ExpectedValue[i][1].toFixed(2) + ")";
+				}
+
+			}
+			
+			countExpectedValue();
+
+		DominanceValuePart = 0;
+
+		function countDominanceStrategies(){
+
+			answer = "";
+			if(ExpectedValue[0][0]>=ExpectedValue[2][0] && ExpectedValue[1][0]>=ExpectedValue[3][0]){
+				answer += "Zeus: Lo \u00A0  & \u00A0";
+				if(ExpectedValue[0][1]>=ExpectedValue[1][1]){
+					answer += "Athena: Lo";
+				} else {
+					answer += "Athena: Hi";
+					DominanceValuePart+=1;
+				}
+
+			} else if (ExpectedValue[0][0]<=ExpectedValue[2][0] && ExpectedValue[1][0]<=ExpectedValue[3][0]) {
+				answer += "Zeus: Hi \u00A0 & \u00A0";
+				DominanceValuePart+=2;
+				if(ExpectedValue[2][1]>=ExpectedValue[3][1]){
+					answer += "Athena: Lo";
+				} else {
+					answer += "Athena: Hi";
+					DominanceValuePart+=1;
+				}
+			}
+			
+			if(answer.length>0){
+				return answer;
+			}
+
+			DominanceValuePart = 0;
+
+			if(ExpectedValue[0][1]>=ExpectedValue[1][1] && ExpectedValue[2][1]>=ExpectedValue[3][1]){
+				if(ExpectedValue[0][0]>=ExpectedValue[2][0]){
+					answer += "Zeus: Lo \u00A0  & \u00A0";
+				} else {
+					answer += "Zeus: Hi \u00A0 & \u00A0";
+					DominanceValuePart+=2;
+				}
+				answer += "Athena: Lo";
+			} else if (ExpectedValue[0][1]<=ExpectedValue[1][1] && ExpectedValue[2][1]<=ExpectedValue[3][1]) {
+				DominanceValuePart+=1;
+				if(ExpectedValue[1][0]>=ExpectedValue[3][0]){
+					answer += "Zeus: Lo \u00A0  & \u00A0";
+				} else {
+					answer += "Zeus: Hi \u00A0 & \u00A0";
+					DominanceValuePart+=2;
+				}
+				answer += "Athena: Hi";
+			}
+
+			return answer;
+			
+		}	
+
+		function countOptimalStrategies(){
+			let ZeusLo = 0;
+			let AthenaLo = 0;
+
+			//23x + 18 - 18x = 18x +20 -20x
+			// let poX = 1- 2 - 3 + 4
+			// let poZnacz =  2 - 4
+			// xRow = poZnacz/poX53
+			
+			ZeusLo =(  ExpectedValue[3][0] - ExpectedValue[2][0] )  / (ExpectedValue[0][0] - ExpectedValue[1][0] - ExpectedValue[2][0] +ExpectedValue[3][0]);
+			
+			AthenaLo = (  ExpectedValue[3][1] - ExpectedValue[1][1] )  / (ExpectedValue[0][1] - ExpectedValue[1][1] - ExpectedValue[2][1] +ExpectedValue[3][1]);
+			
+			
+			document.getElementById("forAthena").innerHTML = "Athena: "+AthenaLo.toFixed(4)+" Lo; \u00A0\u00A0  "+(1-AthenaLo).toFixed(4)+" Hi";
+			document.getElementById("forZeus").innerHTML = "Zeus: "+ZeusLo.toFixed(4)+" Lo; \u00A0\u00A0  "+(1-ZeusLo).toFixed(4)+" Hi";
+			
+			if(ZeusLo<0 || AthenaLo<0){
+				
+				document.getElementById("answ").innerHTML = countDominanceStrategies();
+				document.getElementById("ann1").hidden=false;
+				document.getElementById("ann2").hidden=false;
+				document.getElementById("answ").hidden=false;
+				document.getElementById("valOfGame").innerHTML = "Zeus: "+ExpectedValue[DominanceValuePart][0]+
+				"\u00A0 & \u00A0 Athena: "+ExpectedValue[DominanceValuePart][1];
+				DominanceValuePart=0;
+			} else {
+				document.getElementById("ann1").hidden =true;
+				document.getElementById("ann2").hidden=true;
+				document.getElementById("answ").hidden=true;
+				document.getElementById("valOfGame").innerHTML = "Zeus: "+( AthenaLo*ExpectedValue[0][0]+ (1-AthenaLo)*ExpectedValue[1][0]).toFixed(2) +
+				"\u00A0 & \u00A0Athena: "+ ( ZeusLo*ExpectedValue[0][1]+ (1-ZeusLo)*ExpectedValue[2][1]).toFixed(2);
+			}
+		}
+		
+		countOptimalStrategies();
+		
+		    
+
+			
+		</script>
+
+</body>
+</html>
